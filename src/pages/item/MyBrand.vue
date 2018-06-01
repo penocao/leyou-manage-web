@@ -3,7 +3,7 @@
     <v-card>
       <!-- 卡片的头部 -->
       <v-card-title>
-        <v-btn color="primary">新增</v-btn>
+        <v-btn color="primary" @click="addBrand">新增</v-btn>
         <!--空间隔离组件-->
         <v-spacer />
         <!--搜索框，与search属性关联-->
@@ -33,12 +33,28 @@
         </template>
       </v-data-table>
     </v-card>
+    <v-dialog max-width="500" v-model="show" persistent>
+      <v-card>
+        <!--对话框的标题-->
+      <v-toolbar dense dark color="primary">
+        <v-toolbar-title>新增品牌</v-toolbar-title>
+        <v-spacer/>
+        <!--关闭窗口的按钮-->
+        <v-btn icon @click="closeBrand"><v-icon>close</v-icon></v-btn>
+      </v-toolbar>
+      <v-card class="px-5">
+        <my-brand-form @close="closeBrand"></my-brand-form>
+      </v-card>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script>
+  import MyBrandForm from './MyBrandForm';
   export default {
     name: "my-brand",
+    components: {MyBrandForm},
     data() {
       return {
         search: '', // 搜索过滤字段
@@ -52,62 +68,55 @@
           {text: 'LOGO', align: 'center', sortable: false, value: 'image'},
           {text: '首字母', align: 'center', value: 'letter', sortable: true,},
           {text: "操作", align: 'center', sortable: false},
-        ]
+        ],
+        show:false,
       }
     },
     mounted(){ // 渲染后执行
       // 查询数据
       this.getDataFromServer();
     },
+    watch:{
+      pagination:{
+        deep:true,
+        handler(){
+          this.getDataFromServer();
+        }
+      },
+      search:{
+        handler(){
+          this.getDataFromServer();
+        }
+      }
+    },
     methods:{
       getDataFromServer(){ // 从服务的加载数的方法。
-        // 伪造假数据
-        const brands = [
-          {
-            "id": 2032,
-            "name": "OPPO",
-            "image": "http://img10.360buyimg.com/popshop/jfs/t2119/133/2264148064/4303/b8ab3755/56b2f385N8e4eb051.jpg",
-            "letter": "O",
-            "categories": null
+        this.$http.get("item/brand/page",{
+          params:{
+            key:this.search,//搜索关键词
+            page:this.pagination.page,//当前页
+            rows:this.pagination.rowsPerPage,//每页数量
+            sortBy:this.pagination.sortBy,//排序字段
+            desc:this.pagination.descending,//是否降序
           },
-          {
-            "id": 2033,
-            "name": "飞利浦（PHILIPS）",
-            "image": "http://img12.360buyimg.com/popshop/jfs/t18361/122/1318410299/1870/36fe70c9/5ac43a4dNa44a0ce0.jpg",
-            "letter": "F",
-            "categories": null
-          },
-          {
-            "id": 2034,
-            "name": "华为（HUAWEI）",
-            "image": "http://img10.360buyimg.com/popshop/jfs/t5662/36/8888655583/7806/1c629c01/598033b4Nd6055897.jpg",
-            "letter": "H",
-            "categories": null
-          },
-          {
-            "id": 2036,
-            "name": "酷派（Coolpad）",
-            "image": "http://img10.360buyimg.com/popshop/jfs/t2521/347/883897149/3732/91c917ec/5670cf96Ncffa2ae6.jpg",
-            "letter": "K",
-            "categories": null
-          },
-          {
-            "id": 2037,
-            "name": "魅族（MEIZU）",
-            "image": "http://img13.360buyimg.com/popshop/jfs/t3511/131/31887105/4943/48f83fa9/57fdf4b8N6e95624d.jpg",
-            "letter": "M",
-            "categories": null
-          }
-        ];
-        // 模拟延迟一段时间，随后进行赋值
-        setTimeout(() => {
-          // 然后赋值给brands
-          this.brands = brands;
-          this.totalBrands = brands.length;
-          // 完成赋值后，把加载状态赋值为false
-          this.loading = false;
-        },400)
-      }
+        }).then(resp => {
+          //将得到的属性赋值给本地属性
+          this.brands=resp.data.items;
+          this.totalBrands=resp.data.total;
+          //加载完成后将加载状态设为false
+          this.loading=false;
+        })
+      },
+      addBrand(){
+        this.show = true;
+      },
+      closeBrand(){
+        this.show = false;
+        this.getDataFromServer();
+      },
+    },
+    comments:{
+      MyBrandForm,
     }
   }
 </script>
