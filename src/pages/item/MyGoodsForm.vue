@@ -12,34 +12,31 @@
     <v-stepper-items>
       <!--1、基本信息-->
       <v-stepper-content step="1">
-        <v-layout justify-center>
-          <v-flex xs10>
-            <v-form v-model="valid" ref="basic">
-              <v-layout row>
-                <v-flex xs5>
-                  <v-cascader url="/item/category/list" v-model="goods.categories"
-                              required show-all-levels label="商品分类"/>
-                </v-flex>
-                <v-flex offset-xs2 xs5>
-                  <v-select label="所属品牌" v-model="goods.brandId" :items="brandOptions" dense autocomplete
-                            item-text="name" item-value="id" :rules="[v => !!v || '品牌不能为空']" required/>
-                </v-flex>
-              </v-layout>
-
-              <v-text-field label="商品标题" v-model="goods.title" :counter="200" required
-                            :rules="[v => !!v || '商品标题不能为空']"/>
-              <v-text-field label="商品卖点" v-model="goods.subTitle" :counter="200"/>
-              <v-text-field label="包装清单" v-model="goods.spuDetail.packingList" :counter="1000" multi-line :rows="3"/>
-              <v-text-field label="售后服务" v-model="goods.spuDetail.afterService" :counter="1000" multi-line :rows="3"/>
-              <v-layout row>
-                <v-flex xs3>
-                </v-flex>
-                <v-flex>
-                </v-flex>
-              </v-layout>
-            </v-form>
-          </v-flex>
-        </v-layout>
+        <v-flex class="xs10 mx-auto">
+          <!--商品分类-->
+          <v-cascader
+            url="/item/category/list"
+            required
+            showAllLevels
+            v-model="goods.categories"
+            label="请选择商品分类"/>
+          <!--品牌-->
+          <v-select
+            :items="brandOptions"
+            item-text="name"
+            item-value="id"
+            label="所属品牌"
+            v-model="goods.brandId"
+            required
+            autocomplete
+            clearable
+            dense chips
+          />
+          <v-text-field label="商品标题" v-model="goods.title" :counter="200" required/>
+          <v-text-field label="商品卖点" v-model="goods.subTitle" :counter="200"/>
+          <v-text-field label="包装清单" v-model="goods.spuDetail.packingList" :counter="1000" multi-line :rows="3"/>
+          <v-text-field label="售后服务" v-model="goods.spuDetail.afterService" :counter="1000" multi-line :rows="3"/>
+        </v-flex>
       </v-stepper-content>
       <!--2、商品描述-->
       <v-stepper-content step="2">
