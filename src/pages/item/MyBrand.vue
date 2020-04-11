@@ -51,7 +51,7 @@
 </template>
 
 <script>
-  import MyBrandForm from './MyBrandForm';
+  import MyBrandForm from './BrandForm';
   export default {
     name: "my-brand",
     components: {MyBrandForm},
