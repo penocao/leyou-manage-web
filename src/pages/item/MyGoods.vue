@@ -70,118 +70,118 @@
 </template>
 
 <script>
-  // 导入自定义的表单组件
-  import MyGoodsForm from './MyGoodsForm'
+    // 导入自定义的表单组件
+    import MyGoodsForm from './MyGoodsForm'
 
-  export default {
-    name: "my-goods",
-    data() {
-      return {
-        filter: {
-          saleable: true, // 上架还是下架
-          search: '', // 搜索过滤字段
+    export default {
+        name: "my-goods",
+        data() {
+            return {
+                filter: {
+                    saleable: true, // 上架还是下架
+                    search: '', // 搜索过滤字段
+                },
+                totalGoods: 0, // 总条数
+                goodsList: [], // 当前页品牌数据
+                loading: true, // 是否在加载中
+                pagination: {}, // 分页信息
+                headers: [
+                    {text: 'id', align: 'center', sortable: false, value: 'id'},
+                    {text: '标题', align: 'center', sortable: false, value: 'title'},
+                    {text: '商品分类', align: 'center', sortable: false, value: 'cname'},
+                    {text: '品牌', align: 'center', value: 'bname', sortable: false,},
+                    {text: '操作', align: 'center', sortable: false}
+                ],
+                show: false,// 控制对话框的显示
+                oldGoods: {}, // 即将被编辑的商品信息
+                isEdit: false, // 是否是编辑
+                step: 1, // 子组件中的步骤线索引，默认为1
+            }
         },
-        totalGoods: 0, // 总条数
-        goodsList: [], // 当前页品牌数据
-        loading: true, // 是否在加载中
-        pagination: {}, // 分页信息
-        headers: [
-          {text: 'id', align: 'center', sortable: false, value: 'id'},
-          {text: '标题', align: 'center', sortable: false, value: 'title'},
-          {text: '商品分类', align: 'center', sortable: false, value: 'cname'},
-          {text: '品牌', align: 'center', value: 'bname', sortable: false,},
-          {text: '操作', align: 'center', sortable: false}
-        ],
-        show: false,// 控制对话框的显示
-        oldGoods: {}, // 即将被编辑的商品信息
-        isEdit: false, // 是否是编辑
-        step: 1, // 子组件中的步骤线索引，默认为1
-      }
-    },
-    mounted() { // 渲染后执行
-      // 查询数据
-      this.getDataFromServer();
-    },
-    watch: {
-      pagination: { // 监视pagination属性的变化
-        deep: true, // deep为true，会监视pagination的属性及属性中的对象属性变化
-        handler() {
-          // 变化后的回调函数，这里我们再次调用getDataFromServer即可
-          this.getDataFromServer();
-        }
-      },
-      filter: {// 监视搜索字段
-        handler() {
-          this.getDataFromServer();
+        // mounted() { // 渲染后执行
+        //   // 查询数据
+        //   this.getDataFromServer();
+        // },
+        watch: {
+            pagination: { // 监视pagination属性的变化
+                deep: true, // deep为true，会监视pagination的属性及属性中的对象属性变化
+                handler() {
+                    // 变化后的回调函数，这里我们再次调用getDataFromServer即可
+                    this.getDataFromServer();
+                }
+            },
+            filter: {// 监视搜索字段
+                handler() {
+                    this.getDataFromServer();
+                },
+                deep: true
+            }
         },
-        deep: true
-      }
-    },
-    methods: {
-      getDataFromServer() { // 从服务的加载数的方法。
-        // 发起请求
-        this.$http.get("/item/spu/page", {
-          params: {
-            key: this.filter.search, // 搜索条件
-            saleable: this.filter.saleable, // 上下架
-            page: this.pagination.page,// 当前页
-            rows: this.pagination.rowsPerPage,// 每页大小
-          }
-        }).then(resp => { // 这里使用箭头函数
-          this.goodsList = resp.data.items;
-          this.totalGoods = resp.data.total;
-          // 完成赋值后，把加载状态赋值为false
-          this.loading = false;
-        })
-      },
-      addGoods() {
-        // 修改标记
-        this.isEdit = false;
-        // 控制弹窗可见：
-        this.show = true;
-        // 把oldBrand变为null
-        this.oldGoods = {};
-      },
-      editGoods(oldGoods) {
-        // 发起请求，查询商品详情和skus
-        this.$http.all([
-          this.$http.get("/item/spu/detail/" + oldGoods.id), // 查询商品详情
-          this.$http.get("/item/sku/list?id=" + oldGoods.id) // 查询sku
-        ]).then(this.$http.spread(({data: spuDetail}, {data: skus}) => {
-          oldGoods.spuDetail = spuDetail;
-          oldGoods.skus = skus;
-          // 修改标记
-          this.isEdit = true;
-          // 控制弹窗可见：
-          this.show = true;
-          // 获取要编辑的goods
-          this.oldGoods = oldGoods;
-        }))
-      },
-      closeWindow() {
-        console.log(1)
-        // 重新加载数据
-        this.getDataFromServer();
-        // 关闭窗口
-        this.show = false;
-        // 将步骤调整到1
-        this.step = 1;
-      },
-      previous(){
-        if(this.step > 1){
-          this.step--
+        methods: {
+            getDataFromServer() { // 从服务的加载数的方法。
+                // 发起请求
+                this.$http.get("/item/spu/page", {
+                    params: {
+                        key: this.filter.search, // 搜索条件
+                        saleable: this.filter.saleable === 0 ? null : this.filter.saleable, // 上下架
+                        page: this.pagination.page,// 当前页
+                        rows: this.pagination.rowsPerPage,// 每页大小
+                    }
+                }).then(resp => { // 这里使用箭头函数
+                    this.goodsList = resp.data.items;
+                    this.totalGoods = resp.data.total;
+                    // 完成赋值后，把加载状态赋值为false
+                    this.loading = false;
+                })
+            },
+            addGoods() {
+                // 修改标记
+                this.isEdit = false;
+                // 控制弹窗可见：
+                this.show = true;
+                // 把oldBrand变为null
+                this.oldGoods = {};
+            },
+            editGoods(oldGoods) {
+                // 发起请求，查询商品详情和skus
+                this.$http.all([
+                    this.$http.get("/item/spu/detail/" + oldGoods.id), // 查询商品详情
+                    this.$http.get("/item/sku/list?id=" + oldGoods.id) // 查询sku
+                ]).then(this.$http.spread(({data: spuDetail}, {data: skus}) => {
+                    oldGoods.spuDetail = spuDetail;
+                    oldGoods.skus = skus;
+                    // 修改标记
+                    this.isEdit = true;
+                    // 控制弹窗可见：
+                    this.show = true;
+                    // 获取要编辑的goods
+                    this.oldGoods = oldGoods;
+                }))
+            },
+            closeWindow() {
+                console.log(1)
+                // 重新加载数据
+                this.getDataFromServer();
+                // 关闭窗口
+                this.show = false;
+                // 将步骤调整到1
+                this.step = 1;
+            },
+            previous() {
+                if (this.step > 1) {
+                    this.step--
+                }
+            },
+            next() {
+                if (this.step < 4) {
+                    this.step++
+                }
+            }
+        },
+        components: {
+            MyGoodsForm
         }
-      },
-      next(){
-        if(this.step < 4){
-          this.step++
-        }
-      }
-    },
-    components: {
-      MyGoodsForm
     }
-  }
 </script>
 
 <style scoped>
