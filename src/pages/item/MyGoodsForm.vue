@@ -50,7 +50,7 @@
             <!--组名称-->
             <v-card-title class="subheading">{{spec.group}}</v-card-title>
             <!--遍历组中的每个属性，并判断是否是全局属性，不是则不显示-->
-            <v-card-text v-for="param in spec.params" :key="param.k" v-if="param.global" class="px-5">
+              <v-card-text v-for="param in spec.params" :key="param.k" v-if="param.global" class="px-5">
               <!--判断是否有可选项，如果没有，则显示文本框。还要判断是否是数值类型，如果是把unit显示到后缀-->
               <v-text-field v-if="param.options.length <= 0" :label="param.k" v-model="param.v"
                             :suffix="param.unit || ''"/>

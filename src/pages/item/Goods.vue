@@ -46,10 +46,10 @@
             <i class="el-icon-edit"/>
           </v-btn>
           <v-btn icon>
-            <i class="el-icon-delete"/>
+            <i class="el-icon-delete" @click="deleteGoods(props.item.id)"/>
           </v-btn>
-          <v-btn icon v-if="props.item.saleable">下架</v-btn>
-          <v-btn icon v-else>上架</v-btn>
+          <v-btn icon v-if="props.item.saleable" @click="soldOutPut(props.item.id)">下架</v-btn>
+          <v-btn icon v-else @click="soldOutPut(props.item.id)">上架</v-btn>
         </td>
       </template>
     </v-data-table>
@@ -106,7 +106,7 @@
         ],
         show: false,// 控制对话框的显示
         oldGoods: {}, // 即将被编辑的商品信息
-        isEdit: false, // 是否是编辑
+          isEdit: false, // 是否是编辑
         step: 1, // 子组件中的步骤线索引，默认为1
       }
     },
@@ -117,7 +117,7 @@
     watch: {
       pagination: { // 监视pagination属性的变化
         deep: true, // deep为true，会监视pagination的属性及属性中的对象属性变化
-        handler(newValue,oldValue) {
+        handler() {
           // 变化后的回调函数，这里我们再次调用getDataFromServer即可
           this.getDataFromServer();
         }
@@ -165,8 +165,30 @@
         // 获取要编辑的goods
         this.oldGoods = oldGoods;
       },
+      deleteGoods(id) {
+        this.$message.confirm('此操作将永久删除该商品, 是否继续?').then(
+          () => {
+            //发起删除请求,删除单条数据
+            this.$http.delete("/item/spu/" + id).then(() => {
+              this.$message.success("删除成功");
+              this.getDataFromServer();
+            }).catch(() => {
+              this.$message.error("删除失败!");
+            })
+          }
+        ).catch(() => {
+          this.$message.info("删除已取消!");
+        });
+      },
+      soldOutPut(id){
+        this.$http.put("item/spu/out/"+id).then(() =>{
+          this.$message.success("操作成功");
+          this.getDataFromServer();
+        }).catch(() => {
+          this.$message.error("操作失败");
+        })
+      },
       closeWindow() {
-        console.log(1)
         // 重新加载数据
         this.getDataFromServer();
         // 关闭窗口
